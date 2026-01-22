@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokedex</title>
+    <link rel="icon" type="image/x-icon" href="assets-/pokmrmon-ball.svg" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+  </head>
+
+  <body>
+    <main class="main">
+      <header class="header-home">
+        <div class="container">
+          <div class="logo">
+            <img src="assets-/pokemon-ball-1.jpg" alt="PokemonLogo" />
+            <h1>pokedex</h1>
+          </div>
+          <div class="search-wrapper">
+            <div class="search-wrapp">
+              <span>Search:</span>
+              <input
+                type="text"
+                id="search-input"
+                class="search-input body3-fonts"
+                placeholder="Search Pokemon"
+              />
+              <img
+                src="assets-/x-icon.svg"
+                class="search-close-icon"
+                id="search-close-icon"
+                alt="closeIcon"
+              />
+            </div>
+            <div class="sort-wrapper">
+              <div class="wrapper">
+                <p class="body2-fonts">Sort by:</p>
+                <div class="filter-wrap">
+                  <div>
+                    <input
+                      type="radio"
+                      id="number"
+                      name="filters"
+                      value="number"
+                      checked
+                    />
+                    <label for="number" class="body3-fonts">Number</label>
+                  </div>
+                  <div>
+                    <input type="radio" id="name" name="filters" value="name" />
+                    <label for="name" class="body3-fonts">Name</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <section class="pokemon-list">
+        <div class="container">
+          <div class="list-wrapper"></div>
+        </div>
+        <div id="not-found-message">Pokemon not found</div>
+      </section>
+    </main>
+
+    <div class="modal-overlay" id="pokemon-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <span id="modal-id">#001</span>
+          <h2 id="modal-name">Pokemon</h2>
+          <button class="close-btn" id="close-modal">✕</button>
+        </div>
+
+        <div class="modal-image">
+          <img id="modal-img" src alt="pokemon" />
+
+          <div class="modal-nav">
+            <button
+              class="modal-prev"
+              id="prev-pokemon"
+              aria-label="Previous image"
+            >
+              <img src="assets-/arrow-links.png" alt="Previous-img" />
+            </button>
+            <button
+              class="modal-next"
+              id="next-pokemon"
+              aria-label="Next image"
+            >
+              <img src="assets-/arrow-right.-3png.png" alt="Next-img" />
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-types" id="modal-types"></div>
+
+        <div class="modal-tabs">
+          <button class="tab active" data-tab="main">main</button>
+          <button class="tab" data-tab="stats">stats</button>
+          <button class="tab" data-tab="evo">evo chain</button>
+        </div>
+
+        <div class="modal-content">
+          <div class="tab-content active" id="main">
+            <p>Height: <span id="modal-height"></span></p>
+            <p>Weight: <span id="modal-weight"></span></p>
+            <p>Base experience: <span id="modal-exp"></span></p>
+            <p>Abilities: <span id="modal-abilities"></span></p>
+          </div>
+
+          <div class="tab-content" id="stats">
+            <div id="modal-stats"></div>
+          </div>
+
+          <div class="tab-content" id="evo">
+            <div id="modal-evolution"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p class="p-footer">
+        Copyright © 2026 <span class="year"></span>&nbsp;Pokemon
+      </p>
+    </footer>
+  </body>
+</html>
