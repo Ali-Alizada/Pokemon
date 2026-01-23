@@ -73,20 +73,16 @@ async function renderPokemonList(pokemonArray) {
 
 function createPokemonCard(pokemon, index) {
   const mainType = pokemon.types[0].type.name;
-
   const div = document.createElement("div");
   div.className = `list-item type-${mainType}`;
-
   div.innerHTML = `
     <div class="card-header">
       <span class="pokemon-id">#${pokemon.id.toString().padStart(3, "0")}</span>
       <span class="pokemon-name">${pokemon.name}</span>
     </div>
-
     <div class="img-wrap">
       <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
     </div>
-
     <div class="type-container">
       ${pokemon.types
         .map(
@@ -98,19 +94,16 @@ function createPokemonCard(pokemon, index) {
   `;
 
   div.onclick = () => openModal(index);
-
   return div;
 }
 
 async function openModal(index) {
   currentIndex = index;
-
   const pokemonRef = allPokemons[index];
   const id = getIdFromUrl(pokemonRef.url);
 
   modalOverlay.classList.add("active");
   document.body.style.overflow = "hidden";
-
   const pokemon = await loadPokemon(id);
   const evoData = await loadEvolution(pokemon.species.url);
 
@@ -126,7 +119,6 @@ function fillModal(pokemon) {
   modalId.textContent = `#${pokemon.id.toString().padStart(3, "0")}`;
   modalName.textContent = pokemon.name;
   modalImg.src = pokemon.sprites.other["official-artwork"].front_default;
-
   modalHeight.textContent = pokemon.height / 10 + " m";
   modalWeight.textContent = pokemon.weight / 10 + " kg";
   modalExp.textContent = pokemon.base_experience;
@@ -187,7 +179,6 @@ searchInput.addEventListener("input", () => {
     renderPokemonList(allPokemons);
     return;
   }
-
   const filtered = allPokemons.filter((pokemon) => {
     const id = getIdFromUrl(pokemon.url);
     return pokemon.name.includes(value) || id.startsWith(value);
