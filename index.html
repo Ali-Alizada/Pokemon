@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pokedex</title>
+    <!-- <link rel="stylesheet" href="assets/standart.css" defer /> -->
     <link rel="icon" type="image/x-icon" href="assets-/pokmrmon-ball.svg" />
     <link rel="stylesheet" href="style.css" />
     <script src="script.js" defer></script>
@@ -13,43 +14,50 @@
     <main class="main">
       <header class="header-home">
         <div class="container">
-          <div class="logo">
-            <img src="assets-/pokemon-ball-1.jpg" alt="PokemonLogo" />
-            <h1>pokedex</h1>
-          </div>
-          <div class="search-wrapper">
-            <div class="search-wrapp">
-              <span>Search:</span>
-              <input
-                type="text"
-                id="search-input"
-                class="search-input body3-fonts"
-                placeholder="Search Pokemon"
-              />
-              <img
-                src="assets-/x-icon.svg"
-                class="search-close-icon"
-                id="search-close-icon"
-                alt="closeIcon"
-              />
+          <div class="header-content">
+            <div class="logo">
+              <img src="assets-/pokemon-ball-1.jpg" alt="PokemonLogo" />
+              <h1>pokedex</h1>
             </div>
-            <div class="sort-wrapper">
-              <div class="wrapper">
-                <p class="body2-fonts">Sort by:</p>
-                <div class="filter-wrap">
-                  <div>
-                    <input
-                      type="radio"
-                      id="number"
-                      name="filters"
-                      value="number"
-                      checked
-                    />
-                    <label for="number" class="body3-fonts">Number</label>
-                  </div>
-                  <div>
-                    <input type="radio" id="name" name="filters" value="name" />
-                    <label for="name" class="body3-fonts">Name</label>
+            <div class="search-wrapper">
+              <div class="search-wrapp">
+                <span>Search:</span>
+                <input
+                  type="text"
+                  id="search-input"
+                  class="search-input body3-fonts"
+                  placeholder="Search Pokemon"
+                />
+                <img
+                  src="assets-/x-icon.svg"
+                  class="search-close-icon"
+                  id="search-close-icon"
+                  alt="closeIcon"
+                />
+              </div>
+              <div class="sort-wrapper">
+                <div class="wrapper">
+                  <p class="body2-fonts">Sort by:</p>
+                  <div class="filter-wrap">
+                    <div>
+                      <input
+                        type="radio"
+                        id="number"
+                        name="filters"
+                        value="number"
+                        checked
+                      />
+                      <label for="number" class="body3-fonts">Number</label>
+                    </div>
+                    <div>
+                      <input
+                        type="radio"
+                        id="name"
+                        name="filters"
+                        value="name"
+                      />
+                      <label for="name" class="body3-fonts">Name</label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -120,7 +128,6 @@
         </div>
       </div>
     </div>
-
     <footer>
       <p class="p-footer">
         Copyright © 2026 <span class="year"></span>&nbsp;Pokemon
