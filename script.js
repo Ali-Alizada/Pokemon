@@ -1,9 +1,18 @@
-const MAX_POKEMON = 150;
+const MAX_POKEMON = 90;
 const API_BASE = "https://pokeapi.co/api/v2";
 
+/* =========================
+   GLOBAL STATE & CACHE
+========================= */
 let allPokemons = [];
 let currentIndex = 0;
 
+const pokemonCache = {};
+const evolutionCache = {};
+
+/* =========================
+   DOM ELEMENTS
+========================= */
 const listWrapper = document.querySelector(".list-wrapper");
 const searchInput = document.getElementById("search-input");
 const closeSearchBtn = document.getElementById("search-close-icon");
@@ -29,8 +38,36 @@ const nextBtn = document.getElementById("next-pokemon");
 const tabs = document.querySelectorAll(".tab");
 const tabContents = document.querySelectorAll(".tab-content");
 
+/* =========================
+   INIT
+========================= */
 loadPokemonList();
 
+/* =========================
+   FETCH FUNCTIONS (CACHED)
+========================= */
+async function loadPokemon(id) {
+  if (pokemonCache[id]) return pokemonCache[id];
+
+  const res = await fetch(`${API_BASE}/pokemon/${id}`);
+  const data = await res.json();
+  pokemonCache[id] = data;
+  return data;
+}
+
+async function loadEvolution(speciesUrl) {
+  if (evolutionCache[speciesUrl]) return evolutionCache[speciesUrl];
+
+  const species = await (await fetch(speciesUrl)).json();
+  const evo = await (await fetch(species.evolution_chain.url)).json();
+
+  evolutionCache[speciesUrl] = evo;
+  return evo;
+}
+
+/* =========================
+   LIST
+========================= */
 function loadPokemonList() {
   fetch(`${API_BASE}/pokemon?limit=${MAX_POKEMON}`)
     .then((res) => res.json())
@@ -39,17 +76,6 @@ function loadPokemonList() {
       renderPokemonList(allPokemons);
     })
     .catch(showError);
-}
-
-async function loadPokemon(id) {
-  const res = await fetch(`${API_BASE}/pokemon/${id}`);
-  return res.json();
-}
-
-async function loadEvolution(speciesUrl) {
-  const species = await (await fetch(speciesUrl)).json();
-  const res = await fetch(species.evolution_chain.url);
-  return res.json();
 }
 
 async function renderPokemonList(pokemonArray) {
@@ -62,18 +88,17 @@ async function renderPokemonList(pokemonArray) {
 
   notFoundMessage.style.display = "none";
 
-  for (let i = 0; i < pokemonArray.length; i++) {
-    const pokemonRef = pokemonArray[i];
-    const id = getIdFromUrl(pokemonRef.url);
+  for (const ref of pokemonArray) {
+    const id = getIdFromUrl(ref.url);
     const pokemon = await loadPokemon(id);
-
-    listWrapper.appendChild(createPokemonCard(pokemon, i));
+    listWrapper.appendChild(createPokemonCard(pokemon));
   }
 }
 
-function createPokemonCard(pokemon, index) {
+function createPokemonCard(pokemon) {
   const mainType = pokemon.types[0].type.name;
   const div = document.createElement("div");
+
   div.className = `list-item type-${mainType}`;
   div.innerHTML = `
     <div class="card-header">
@@ -93,22 +118,24 @@ function createPokemonCard(pokemon, index) {
     </div>
   `;
 
-  div.onclick = () => openModal(index);
+  div.onclick = () => openModalById(pokemon.id);
   return div;
 }
 
-async function openModal(index) {
-  currentIndex = index;
-  const pokemonRef = allPokemons[index];
-  const id = getIdFromUrl(pokemonRef.url);
+/* =========================
+   MODAL
+========================= */
+async function openModalById(id) {
+  currentIndex = allPokemons.findIndex((p) => getIdFromUrl(p.url) == id);
 
   modalOverlay.classList.add("active");
   document.body.style.overflow = "hidden";
+
   const pokemon = await loadPokemon(id);
-  const evoData = await loadEvolution(pokemon.species.url);
+  const evo = await loadEvolution(pokemon.species.url);
 
   fillModal(pokemon);
-  showEvolution(evoData.chain);
+  showEvolution(evo.chain);
   updateNavButtons();
   activateTab("main");
 }
@@ -119,6 +146,7 @@ function fillModal(pokemon) {
   modalId.textContent = `#${pokemon.id.toString().padStart(3, "0")}`;
   modalName.textContent = pokemon.name;
   modalImg.src = pokemon.sprites.other["official-artwork"].front_default;
+
   modalHeight.textContent = pokemon.height / 10 + " m";
   modalWeight.textContent = pokemon.weight / 10 + " kg";
   modalExp.textContent = pokemon.base_experience;
@@ -137,6 +165,9 @@ function fillModal(pokemon) {
   renderStats(pokemon.stats);
 }
 
+/* =========================
+   STATS
+========================= */
 function renderStats(stats) {
   modalStats.innerHTML = "";
 
@@ -155,6 +186,9 @@ function renderStats(stats) {
   });
 }
 
+/* =========================
+   EVOLUTION
+========================= */
 function showEvolution(chain) {
   modalEvolution.innerHTML = "";
   renderEvolutionStep(chain);
@@ -164,27 +198,53 @@ function renderEvolutionStep(chain) {
   const id = getIdFromUrl(chain.species.url);
 
   modalEvolution.innerHTML += `
-    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png"
-         alt="${chain.species.name}">
+    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png">
   `;
 
-  chain.evolves_to.forEach((evo) => renderEvolutionStep(evo));
+  chain.evolves_to.forEach(renderEvolutionStep);
+}
+
+/* =========================
+   SEARCH (FIXED)
+========================= */
+function getSelectedFilter() {
+  return document.querySelector('input[name="filters"]:checked').value;
 }
 
 searchInput.addEventListener("input", () => {
   const value = searchInput.value.trim().toLowerCase();
+  const filter = getSelectedFilter();
+
   closeSearchBtn.style.display = value ? "block" : "none";
 
   if (!value) {
     renderPokemonList(allPokemons);
+    notFoundMessage.style.display = "none";
     return;
   }
+
   const filtered = allPokemons.filter((pokemon) => {
     const id = getIdFromUrl(pokemon.url);
-    return pokemon.name.includes(value) || id.startsWith(value);
+    const name = pokemon.name.toLowerCase();
+
+    if (filter === "number") {
+      return id === value || id.padStart(3, "0") === value;
+    }
+
+    if (filter === "name") {
+      return name.includes(value);
+    }
+
+    return false;
   });
 
   renderPokemonList(filtered);
+});
+
+document.querySelectorAll('input[name="filters"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    searchInput.dispatchEvent(new Event("input"));
+  });
 });
 
 closeSearchBtn.addEventListener("click", () => {
@@ -195,15 +255,25 @@ closeSearchBtn.addEventListener("click", () => {
   searchInput.focus();
 });
 
-prevBtn.onclick = () => currentIndex > 0 && openModal(currentIndex - 1);
+/* =========================
+   NAVIGATION
+========================= */
+prevBtn.onclick = () =>
+  currentIndex > 0 &&
+  openModalById(getIdFromUrl(allPokemons[currentIndex - 1].url));
+
 nextBtn.onclick = () =>
-  currentIndex < allPokemons.length - 1 && openModal(currentIndex + 1);
+  currentIndex < allPokemons.length - 1 &&
+  openModalById(getIdFromUrl(allPokemons[currentIndex + 1].url));
 
 function updateNavButtons() {
   prevBtn.disabled = currentIndex === 0;
   nextBtn.disabled = currentIndex === allPokemons.length - 1;
 }
 
+/* =========================
+   TABS
+========================= */
 tabs.forEach((tab) => {
   tab.onclick = () => activateTab(tab.dataset.tab);
 });
@@ -216,6 +286,9 @@ function activateTab(id) {
   document.getElementById(id).classList.add("active");
 }
 
+/* =========================
+   CLOSE MODAL
+========================= */
 closeModalBtn.onclick = closeModal;
 modalOverlay.onclick = (e) => e.target === modalOverlay && closeModal();
 
@@ -227,12 +300,14 @@ function closeModal() {
 document.addEventListener("keydown", (e) => {
   if (!modalOverlay.classList.contains("active")) return;
 
-  if (e.key === "ArrowLeft" && currentIndex > 0) openModal(currentIndex - 1);
-  if (e.key === "ArrowRight" && currentIndex < allPokemons.length - 1)
-    openModal(currentIndex + 1);
+  if (e.key === "ArrowLeft") prevBtn.click();
+  if (e.key === "ArrowRight") nextBtn.click();
   if (e.key === "Escape") closeModal();
 });
 
+/* =========================
+   HELPERS
+========================= */
 function getIdFromUrl(url) {
   return url.split("/")[6];
 }

@@ -3,7 +3,7 @@
   font-family: "Raleway";
   font-style: normal;
   font-weight: 400;
-  src: url("../fonts/raleway-v37-latin-regular.woff2") format("woff2");
+  src: url("fonts/raleway-v37-latin-regular.woff2") format("woff2");
 }
 
 * {
@@ -416,7 +416,7 @@ header .container {
   align-items: center;
   padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 15px);
   border-radius: 14px 14px 0 0;
-  background: #3c5077;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 #modal-id {
@@ -443,7 +443,7 @@ header .container {
   text-align: center;
   padding: clamp(10px, 3vw, 15px);
   position: relative;
-  background: inherit;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .modal-image img {
@@ -485,7 +485,7 @@ header .container {
   justify-content: center;
   gap: 8px;
   padding: 8px;
-  background: #3c5077;
+  background: rgba(0, 0, 0, 0.2);
   flex-wrap: wrap;
 }
 
@@ -495,13 +495,13 @@ header .container {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   height: clamp(36px, 8vw, 40px);
-  background: #3c5077;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .tab {
   background: none;
   border: none;
-  color: #bbb;
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   font-size: clamp(14px, 3vw, 17px);
   font-weight: bold;
@@ -518,9 +518,9 @@ header .container {
 
 .modal-content {
   padding: clamp(12px, 3vw, 13px);
-  line-height: 8px;
   border-radius: 0 0 14px 14px;
   height: 230px;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .tab-content {
@@ -529,7 +529,6 @@ header .container {
 
 .tab-content.active {
   display: block;
-  /* line-height: 10px; */
 }
 
 .stat-label {
@@ -583,8 +582,8 @@ header .container {
   justify-content: center;
   align-items: center;
   gap: 12px;
-  /* padding: 10px; */
-  margin-top: 60px;
+  padding: 10px;
+  min-height: 150px;
 }
 
 #modal-evolution img {
@@ -651,7 +650,6 @@ footer .p-footer {
 
   .search-wrapp {
     width: 100%;
-    /* max-width: 420px; */
     justify-content: center;
   }
 
@@ -741,13 +739,11 @@ footer .p-footer {
   }
 
   .search-wrapp {
-    /* flex-direction: column; */
     align-items: center;
     gap: 8px;
   }
 
   .search-wrapp span {
-    /* align-self: flex-start; */
     display: none;
   }
 
@@ -757,7 +753,6 @@ footer .p-footer {
   }
 
   .wrapper {
-    /* flex-direction: column; */
     align-items: center;
     gap: 8px;
   }
