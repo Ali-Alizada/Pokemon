@@ -331,7 +331,8 @@ header .container {
   justify-content: center;
   align-items: center;
   z-index: 999;
-  padding: 20px;
+  /* padding: 20px; */
+  
 }
 
 .modal-overlay.active {
@@ -769,6 +770,7 @@ footer .p-footer {
   .modal {
     width: calc(100% - 30px);
     max-width: 320px;
+    max-height: 460px;
   }
 }
 
