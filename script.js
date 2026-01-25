@@ -1,8 +1,12 @@
-const MAX_POKEMON = 90;
+const MAX_POKEMON = 151;
 const API_BASE = "https://pokeapi.co/api/v2";
+const BATCH_SIZE = 24;
 
 let allPokemons = [];
+let filteredPokemons = [];
 let currentIndex = 0;
+let renderIndex = 0;
+
 const pokemonCache = {};
 const evolutionCache = {};
 
@@ -23,7 +27,6 @@ const modalExp = document.getElementById("modal-exp");
 const modalAbilities = document.getElementById("modal-abilities");
 const modalStats = document.getElementById("modal-stats");
 const modalEvolution = document.getElementById("modal-evolution");
-
 const closeModalBtn = document.getElementById("close-modal");
 const prevBtn = document.getElementById("prev-pokemon");
 const nextBtn = document.getElementById("next-pokemon");
@@ -32,6 +35,7 @@ const tabs = document.querySelectorAll(".tab");
 const tabContents = document.querySelectorAll(".tab-content");
 
 loadPokemonList();
+window.addEventListener("scroll", handleScroll);
 
 async function loadPokemon(id) {
   if (pokemonCache[id]) return pokemonCache[id];
@@ -54,71 +58,74 @@ function loadPokemonList() {
     .then((res) => res.json())
     .then((data) => {
       allPokemons = data.results;
-      renderPokemonList(allPokemons);
+      filteredPokemons = [...allPokemons];
+      resetAndRender();
     })
     .catch(showError);
 }
 
-async function renderPokemonList(pokemonArray) {
+function resetAndRender() {
   listWrapper.innerHTML = "";
-  if (pokemonArray.length === 0) {
-    notFoundMessage.style.display = "flex";
-    return;
-  }
-  notFoundMessage.style.display = "none";
-  for (const ref of pokemonArray) {
+  renderIndex = 0;
+  renderNextBatch();
+}
+
+async function renderNextBatch() {
+  const slice = filteredPokemons.slice(renderIndex, renderIndex + BATCH_SIZE);
+  for (const ref of slice) {
     const id = getIdFromUrl(ref.url);
     const pokemon = await loadPokemon(id);
     listWrapper.appendChild(createPokemonCard(pokemon));
+  }
+  renderIndex += BATCH_SIZE;
+}
+
+function handleScroll() {
+  const nearBottom =
+    window.innerHeight + window.scrollY >= document.body.offsetHeight - 300;
+
+  if (nearBottom && renderIndex < filteredPokemons.length) {
+    renderNextBatch();
   }
 }
 
 function createPokemonCard(pokemon) {
   const mainType = pokemon.types[0].type.name;
   const div = document.createElement("div");
-
   div.className = `list-item type-${mainType}`;
-  div.innerHTML = `
-    <div class="card-header">
-      <span class="pokemon-id">#${pokemon.id.toString().padStart(3, "0")}</span>
-      <span class="pokemon-name">${pokemon.name}</span>
-    </div>
-    <div class="img-wrap">
-      <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
-    </div>
-    <div class="type-container">
-      ${pokemon.types
-        .map(
-          (t) =>
-            `<span class="type-badge type-${t.type.name}">${t.type.name}</span>`,
-        )
-        .join("")}
-    </div>
-  `;
+  div.innerHTML = createPokemonCardHTML(pokemon);
   div.onclick = () => openModalById(pokemon.id);
   return div;
 }
 
 async function openModalById(id) {
-  currentIndex = allPokemons.findIndex((p) => getIdFromUrl(p.url) == id);
+  currentIndex = filteredPokemons.findIndex((p) => getIdFromUrl(p.url) == id);
 
   modalOverlay.classList.add("active");
   document.body.style.overflow = "hidden";
   const pokemon = await loadPokemon(id);
-  const evo = await loadEvolution(pokemon.species.url);
-
   fillModal(pokemon);
+  const evo = await loadEvolution(pokemon.species.url);
   showEvolution(evo.chain);
+
   updateNavButtons();
   activateTab("main");
 }
 
+function closeModal() {
+  modalOverlay.classList.remove("active");
+  document.body.style.overflow = "";
+}
+
 function fillModal(pokemon) {
   modal.className = `modal type-${pokemon.types[0].type.name}`;
-
   modalId.textContent = `#${pokemon.id.toString().padStart(3, "0")}`;
   modalName.textContent = pokemon.name;
-  modalImg.src = pokemon.sprites.other["official-artwork"].front_default;
+  modalImg.src =
+    pokemon.sprites.other?.["official-artwork"]?.front_default ||
+    pokemon.sprites.other?.dream_world?.front_default ||
+    pokemon.sprites.front_default;
+
   modalHeight.textContent = pokemon.height / 10 + " m";
   modalWeight.textContent = pokemon.weight / 10 + " kg";
   modalExp.textContent = pokemon.base_experience;
@@ -133,7 +140,6 @@ function fillModal(pokemon) {
     span.textContent = t.type.name;
     modalTypes.appendChild(span);
   });
-
   renderStats(pokemon.stats);
 }
 
@@ -153,6 +159,7 @@ function renderStats(stats) {
     `;
   });
 }
+
 function showEvolution(chain) {
   modalEvolution.innerHTML = "";
   renderEvolutionStep(chain);
@@ -160,11 +167,9 @@ function showEvolution(chain) {
 
 function renderEvolutionStep(chain) {
   const id = getIdFromUrl(chain.species.url);
-
   modalEvolution.innerHTML += `
     <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png">
   `;
-
   chain.evolves_to.forEach(renderEvolutionStep);
 }
 
@@ -178,15 +183,15 @@ searchInput.addEventListener("input", () => {
   closeSearchBtn.style.display = value ? "block" : "none";
 
   if (!value) {
-    renderPokemonList(allPokemons);
+    filteredPokemons = [...allPokemons];
     notFoundMessage.style.display = "none";
+    resetAndRender();
     return;
   }
 
-  const filtered = allPokemons.filter((pokemon) => {
-    const id = getIdFromUrl(pokemon.url);
-    const name = pokemon.name.toLowerCase();
-
+  filteredPokemons = allPokemons.filter((p) => {
+    const id = getIdFromUrl(p.url);
+    const name = p.name.toLowerCase();
     if (filter === "number") {
       return id === value || id.padStart(3, "0") === value;
     }
@@ -196,62 +201,47 @@ searchInput.addEventListener("input", () => {
     return false;
   });
 
-  renderPokemonList(filtered);
+  notFoundMessage.style.display = filteredPokemons.length ? "none" : "flex";
+  resetAndRender();
 });
 
-document.querySelectorAll('input[name="filters"]').forEach((radio) => {
-  radio.addEventListener("change", () => {
-    searchInput.dispatchEvent(new Event("input"));
-  });
-});
+document
+  .querySelectorAll('input[name="filters"]')
+  .forEach((radio) =>
+    radio.addEventListener("change", () =>
+      searchInput.dispatchEvent(new Event("input")),
+    ),
+  );
 
 closeSearchBtn.addEventListener("click", () => {
   searchInput.value = "";
   closeSearchBtn.style.display = "none";
-  renderPokemonList(allPokemons);
+  filteredPokemons = [...allPokemons];
   notFoundMessage.style.display = "none";
-  searchInput.focus();
+  resetAndRender();
 });
 
 prevBtn.onclick = () =>
   currentIndex > 0 &&
-  openModalById(getIdFromUrl(allPokemons[currentIndex - 1].url));
+  openModalById(getIdFromUrl(filteredPokemons[currentIndex - 1].url));
 
 nextBtn.onclick = () =>
-  currentIndex < allPokemons.length - 1 &&
-  openModalById(getIdFromUrl(allPokemons[currentIndex + 1].url));
+  currentIndex < filteredPokemons.length - 1 &&
+  openModalById(getIdFromUrl(filteredPokemons[currentIndex + 1].url));
 
 function updateNavButtons() {
   prevBtn.disabled = currentIndex === 0;
-  nextBtn.disabled = currentIndex === allPokemons.length - 1;
+  nextBtn.disabled = currentIndex === filteredPokemons.length - 1;
 }
 
-tabs.forEach((tab) => {
-  tab.onclick = () => activateTab(tab.dataset.tab);
-});
+tabs.forEach((tab) => (tab.onclick = () => activateTab(tab.dataset.tab)));
 
 function activateTab(id) {
   tabs.forEach((t) => t.classList.remove("active"));
   tabContents.forEach((c) => c.classList.remove("active"));
-
   document.querySelector(`[data-tab="${id}"]`).classList.add("active");
   document.getElementById(id).classList.add("active");
 }
-
-closeModalBtn.onclick = closeModal;
-modalOverlay.onclick = (e) => e.target === modalOverlay && closeModal();
-
-function closeModal() {
-  modalOverlay.classList.remove("active");
-  document.body.style.overflow = "";
-}
-
-document.addEventListener("keydown", (e) => {
-  if (!modalOverlay.classList.contains("active")) return;
-  if (e.key === "ArrowLeft") prevBtn.click();
-  if (e.key === "ArrowRight") nextBtn.click();
-  if (e.key === "Escape") closeModal();
-});
 
 function getIdFromUrl(url) {
   return url.split("/")[6];
@@ -261,3 +251,8 @@ function showError() {
   notFoundMessage.style.display = "flex";
   notFoundMessage.textContent = "Fehler beim Laden";
 }
+
+closeModalBtn.addEventListener("click", closeModal);
+modalOverlay.addEventListener("click", (e) => {
+  if (e.target === modalOverlay) closeModal();
+});

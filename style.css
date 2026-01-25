@@ -208,8 +208,8 @@ header .container {
 }
 
 .img-wrap img {
-  width: clamp(80px, 15vw, 100px);
-  height: clamp(80px, 15vw, 100px);
+  width: clamp(80px, 15vw, 130px);
+  height: clamp(80px, 15vw, 145px);
   object-fit: contain;
 }
 
@@ -332,7 +332,6 @@ header .container {
   align-items: center;
   z-index: 999;
   /* padding: 20px; */
-  
 }
 
 .modal-overlay.active {
