@@ -1,4 +1,4 @@
-const MAX_POKEMON = 150;
+const MAX_POKEMON = 300;
 const API_BASE = "https://pokeapi.co/api/v2";
 const BATCH_SIZE = 24;
 
