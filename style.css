@@ -248,7 +248,7 @@ header .container {
 
 .type-badge,
 .type {
-  padding: clamp(3px, 1vw, 4px) clamp(8px, 2vw, 10px);
+  padding: clamp(3px, 1vw, 4px) clamp(8px, 2vw, 7px);
   border-radius: 999px;
   font-size: clamp(10px, 2vw, 12px);
   font-weight: bold;
@@ -764,10 +764,30 @@ footer .p-footer {
     justify-content: center;
   }
 
-  .list-wrapper {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-  }
+
+
+/* -------------------------- */
+
+.list-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: clamp(12px, 3vw, 16px);
+}
+
+.list-item {
+  align-self: stretch;
+}
+
+
+.img-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
 
   .modal {
     width: calc(100% - 30px);
